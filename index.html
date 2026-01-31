@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宏國地政 | 易丞地政 - 遺產繼承案件辦理系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#1B2A41', // Deep Navy (Professional)
+                            main: '#324A5F', // Slate Blue
+                            gold: '#C7A064', // Muted Gold (Premium accent)
+                            light: '#F0F4F8', // Very light blue-gray background
+                        },
+                        accent: '#D76F50', // Warm Terracotta for highlights
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                        serif: ['Noto Serif TC', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F5F7FA;
+            color: #2D3748;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #A0AEC0; }
+
+        /* Transitions */
+        .fade-enter { opacity: 0; transform: translateY(10px); }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
+
+        /* Card Styles */
+        .glass-card {
+            background: white;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 1rem;
+        }
+
+        /* Print Styles - Letterhead Design */
+        @media print {
+            body { background: white; -webkit-print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            
+            #checklist-container {
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .print-header {
+                border-bottom: 2px solid #C7A064;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+            }
+            
+            /* Ensure checkboxes render */
+            input[type="checkbox"] {
+                appearance: none;
+                width: 15px;
+                height: 15px;
+                border: 1px solid #000;
+                background: white;
+                display: inline-block;
+            }
+            input[type="checkbox"]:checked {
+                background: #000;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen font-sans selection:bg-brand-gold selection:text-white">
+
+    <nav class="bg-brand-dark text-white sticky top-0 z-50 shadow-md no-print">
+        <div class="container mx-auto px-4 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-brand-gold rounded-lg flex items-center justify-center text-brand-dark shadow-inner">
+                    <i class="fa-solid fa-landmark text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif text-xl tracking-wide font-bold leading-tight">宏國地政 | 易丞地政</h1>
+                    <p class="text-xs text-gray-400 tracking-wider">專業代書 ‧ 稅務規劃 ‧ 繼承專家</p>
+                </div>
+            </div>
+
+            <div class="flex bg-white/10 rounded-lg p-1 space-x-1">
+                <button onclick="switchView('guide')" id="nav-guide" class="nav-item px-5 py-2 rounded-md text-sm font-medium transition-all duration-200 bg-brand-gold text-brand-dark shadow">
+                    <i class="fa-solid fa-list-check mr-2"></i>辦理流程
+                </button>
+                <button onclick="switchView('checklist')" id="nav-checklist" class="nav-item px-5 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-clipboard-check mr-2"></i>應備文件
+                </button>
+                <button onclick="switchView('analysis')" id="nav-analysis" class="nav-item px-5 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-calculator mr-2"></i>稅務試算
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-4 py-8 relative">
+
+        <div id="view-guide" class="view-section fade-enter-active">
+            <header class="mb-8 text-center">
+                <h2 class="text-3xl font-serif text-brand-dark font-bold mb-2">遺產繼承案件標準作業流程</h2>
+                <p class="text-gray-500">依據 2025-2026 最新法規彙編，為您解析從除戶到產權移轉的完整步驟</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-4 bg-white rounded-2xl shadow-sm p-6 border border-gray-100 h-fit sticky top-24">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">案件進度節點</h3>
+                    <div class="space-y-0 relative">
+                        <div class="absolute left-4 top-4 bottom-4 w-0.5 bg-gray-200 z-0"></div>
+                        
+                        <div id="timeline-nav" class="relative z-10 space-y-6"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8">
+                    <div id="process-content" class="glass-card p-8 min-h-[500px] flex flex-col justify-center transition-all duration-300">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-checklist" class="view-section hidden">
+            <div id="checklist-container" class="max-w-4xl mx-auto bg-white shadow-xl rounded-none md:rounded-xl overflow-hidden min-h-[29.7cm]"> <div class="p-8 md:p-12 border-b-2 border-brand-gold relative">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2 print-only">
+                                <i class="fa-solid fa-landmark text-2xl text-brand-dark"></i>
+                                <span class="text-2xl font-serif font-bold text-brand-dark">宏國地政 | 易丞地政</span>
+                            </div>
+                            <h2 class="text-3xl font-serif font-bold text-brand-dark mb-2">遺產繼承案件 - 客戶應備文件檢核表</h2>
+                            <p class="text-gray-500 text-sm">請依據下方清單準備相關文件，若有疑問請隨時聯繫本所。</p>
+                        </div>
+                        <div class="no-print">
+                            <button onclick="window.print()" class="bg-brand-dark text-white px-6 py-2 rounded shadow hover:bg-gray-800 transition flex items-center gap-2">
+                                <i class="fa-solid fa-print"></i> 列印 / 存為PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 no-print">
+                        <div class="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                            <span>準備進度</span>
+                            <span id="progress-text">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="progress-bar" class="bg-brand-gold h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8 md:p-12 space-y-10">
+                    
+                    <section>
+                        <h3 class="flex items-center text-lg font-bold text-brand-dark mb-4 border-b border-gray-100 pb-2">
+                            <span class="w-8 h-8 rounded bg-brand-light text-brand-main flex items-center justify-center mr-3 text-sm"><i class="fa-solid fa-id-card"></i></span>
+                            身分證明文件
+                        </h3>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                                <tr>
+                                    <th class="p-3 w-12 text-center">核對</th>
+                                    <th class="p-3">文件名稱</th>
+                                    <th class="p-3 w-24">數量</th>
+                                    <th class="p-3">用途說明</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">被繼承人死亡證明書</td>
+                                    <td class="p-3">正本 10份</td>
+                                    <td class="p-3 text-gray-500">向醫院/衛生所申請。除戶、報稅、過戶皆需使用。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">被繼承人除戶戶籍謄本</td>
+                                    <td class="p-3">正本 5份</td>
+                                    <td class="p-3 text-gray-500">需含詳細死亡記事。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">全體繼承人現戶戶籍謄本</td>
+                                    <td class="p-3">正本 5份</td>
+                                    <td class="p-3 text-gray-500">需含詳細記事，確認繼承關係。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">繼承人身分證影本</td>
+                                    <td class="p-3">影本 3份</td>
+                                    <td class="p-3 text-gray-500">正反面清晰影本，辦理時需攜帶正本核對。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">印鑑證明 (若需分割協議)</td>
+                                    <td class="p-3">正本 1份</td>
+                                    <td class="p-3 text-gray-500">戶政事務所申請，用途可註明「遺產繼承」。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section>
+                        <h3 class="flex items-center text-lg font-bold text-brand-dark mb-4 border-b border-gray-100 pb-2">
+                            <span class="w-8 h-8 rounded bg-brand-light text-brand-main flex items-center justify-center mr-3 text-sm"><i class="fa-solid fa-sack-dollar"></i></span>
+                            財產與權利證明
+                        </h3>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                                <tr>
+                                    <th class="p-3 w-12 text-center">核對</th>
+                                    <th class="p-3">文件名稱</th>
+                                    <th class="p-3 w-24">數量</th>
+                                    <th class="p-3">用途說明</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">土地 / 建物所有權狀</td>
+                                    <td class="p-3">正本</td>
+                                    <td class="p-3 text-gray-500">若遺失需另外切結補發。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">存款餘額證明書</td>
+                                    <td class="p-3">正本</td>
+                                    <td class="p-3 text-gray-500">向銀行申請，基準日為「死亡日當天」。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">存摺 / 定存單</td>
+                                    <td class="p-3">正影本</td>
+                                    <td class="p-3 text-gray-500">存摺需補登至死亡日之後。</td>
+                                </tr>
+                                <tr class="bg-orange-50/50">
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium text-brand-dark">未上市櫃公司持股證明</td>
+                                    <td class="p-3">正本</td>
+                                    <td class="p-3 text-gray-600 font-medium">需索取該公司「死亡日資產負債表」以計算淨值。</td>
+                                </tr>
+                                <tr class="bg-blue-50/50">
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium text-brand-dark">虛擬貨幣交易所/錢包證明</td>
+                                    <td class="p-3">截圖/報表</td>
+                                    <td class="p-3 text-gray-600 font-medium">持有數量及死亡日當天匯率證明 (國稅局重點查核)。</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 text-center"><input type="checkbox" class="checklist-item w-4 h-4 accent-brand-gold"></td>
+                                    <td class="p-3 font-medium">人壽保險單</td>
+                                    <td class="p-3">影本</td>
+                                    <td class="p-3 text-gray-500">確認受益人指定狀況及是否涉及實質課稅。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <div class="mt-8 p-4 bg-gray-50 text-xs text-gray-500 rounded border border-gray-100 print:bg-transparent print:border-none">
+                        <p class="font-bold mb-1">注意事項：</p>
+                        <ul class="list-disc pl-4 space-y-1">
+                            <li>上述文件數量為一般案件建議，特殊情況（如跨國繼承、訴訟案件）可能需額外文件。</li>
+                            <li>正本文件於核對後通常會歸還，部分機關（如戶政、地政）需留存正本。</li>
+                            <li>本清單由 宏國地政 | 易丞地政 提供，僅供客戶辦理參考。</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="view-analysis" class="view-section hidden">
+            <header class="mb-8 text-center">
+                <h2 class="text-3xl font-serif text-brand-dark font-bold mb-2">遺產稅試算與實務分析</h2>
+                <p class="text-gray-500">2026年最新稅率級距與特殊資產評估工具</p>
+            </header>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div class="xl:col-span-1">
+                    <div class="bg-brand-dark text-white rounded-2xl shadow-xl overflow-hidden relative">
+                        <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+                        
+                        <div class="p-8">
+                            <h3 class="text-xl font-serif font-bold mb-6 flex items-center gap-2">
+                                <i class="fa-solid fa-calculator text-brand-gold"></i> 簡易稅額試算
+                            </h3>
+                            
+                            <div class="space-y-5">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-400 uppercase">遺產總額 (新台幣)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-3 text-gray-400">$</span>
+                                        <input type="number" id="calc-estate" class="w-full bg-white/10 border border-white/20 rounded-lg p-2.5 pl-8 text-white focus:ring-2 focus:ring-brand-gold outline-none transition" placeholder="例如: 30000000">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-bold text-gray-400 uppercase">配偶扣除 (553萬)</label>
+                                        <select id="calc-spouse" class="w-full bg-white/10 border border-white/20 rounded-lg p-2.5 text-white outline-none">
+                                            <option value="0">無</option>
+                                            <option value="1">有</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-xs font-bold text-gray-400 uppercase">父母扣除 (138萬/人)</label>
+                                        <select id="calc-parents" class="w-full bg-white/10 border border-white/20 rounded-lg p-2.5 text-white outline-none">
+                                            <option value="0">0人</option>
+                                            <option value="1">1人</option>
+                                            <option value="2">2人</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-400 uppercase">子女扣除 (56萬/人)</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="range" id="calc-children-range" min="0" max="10" value="0" class="flex-grow h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-brand-gold">
+                                        <span id="calc-children-val" class="text-brand-gold font-bold w-6">0</span> 人
+                                    </div>
+                                </div>
+
+                                <button onclick="calculateTax()" class="w-full bg-brand-gold hover:bg-yellow-600 text-brand-dark font-bold py-3.5 rounded-lg shadow-lg transform active:scale-95 transition-all mt-4">
+                                    開始計算
+                                </button>
+                            </div>
+
+                            <div id="calc-result" class="mt-8 pt-6 border-t border-white/10 hidden animate-fade-in">
+                                <p class="text-center text-gray-400 text-xs mb-1">預估應納遺產稅額</p>
+                                <p class="text-center text-3xl font-serif font-bold text-white tracking-tight" id="calc-amount">$0</p>
+                                <div class="mt-4 text-xs text-gray-400 bg-black/20 p-3 rounded">
+                                    <div class="flex justify-between mb-1"><span>免稅額度</span><span>1,333 萬</span></div>
+                                    <div class="flex justify-between"><span>喪葬扣除</span><span>1,333 萬</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:col-span-2 space-y-6">
+                    
+                    <div class="flex space-x-1 border-b border-gray-200">
+                        <button onclick="switchAnalysis('crypto')" class="analysis-tab active px-6 py-3 text-sm font-bold text-brand-main border-b-2 border-brand-main bg-white rounded-t-lg">
+                            <i class="fa-brands fa-bitcoin mr-2"></i>虛擬資產
+                        </button>
+                        <button onclick="switchAnalysis('insurance')" class="analysis-tab px-6 py-3 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-brand-main">
+                            <i class="fa-solid fa-file-shield mr-2"></i>保險實質課稅
+                        </button>
+                        <button onclick="switchAnalysis('stock')" class="analysis-tab px-6 py-3 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-brand-main">
+                            <i class="fa-solid fa-chart-line mr-2"></i>未上市股票
+                        </button>
+                    </div>
+
+                    <div class="glass-card p-6 min-h-[400px]">
+                        
+                        <div id="tab-crypto" class="analysis-content block">
+                            <div class="flex items-start gap-4 mb-4">
+                                <div class="p-3 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-wallet text-xl"></i></div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-brand-dark">虛擬貨幣 (Crypto) 遺產申報重點</h4>
+                                    <p class="text-sm text-gray-500">2025年重點查核項目</p>
+                                </div>
+                            </div>
+                            <div class="prose text-gray-600 text-sm space-y-4">
+                                <p>虛擬資產屬「具財產價值之權利」，繼承人必須主動申報。目前國稅局已透過反洗錢(AML)機制掌握國內交易所(VASP)資料。</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+                                        <strong class="block text-gray-800 mb-2">如何估價？</strong>
+                                        <p>以「繼承開始日」(死亡日) 之收盤價或加權平均成交價計算。若無公開報價，需提供專家鑑價報告。</p>
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-red-500">
+                                        <strong class="block text-gray-800 mb-2">風險提示</strong>
+                                        <p>法務部執行署已開始清查欠稅人之虛擬資產，切勿心存僥倖漏報冷錢包或海外資產。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-insurance" class="analysis-content hidden">
+                            <div class="flex items-start gap-4 mb-4">
+                                <div class="p-3 bg-red-50 text-red-600 rounded-lg"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-brand-dark">保險金實質課稅原則 (八大樣態)</h4>
+                                    <p class="text-sm text-gray-500">即使指定受益人，仍可能被視為遺產</p>
+                                </div>
+                            </div>
+                            <div class="bg-red-50/50 p-4 rounded-lg mb-4">
+                                <p class="text-sm text-gray-700">國稅局若認定投保動機為「規避稅負」，將依實質課稅原則計入遺產總額。常見特徵如下：</p>
+                            </div>
+                            <ul class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <li class="flex items-center gap-2 p-2 border rounded hover:bg-gray-50"><i class="fa-solid fa-circle-xmark text-red-400"></i> 重病投保 (帶病投保)</li>
+                                <li class="flex items-center gap-2 p-2 border rounded hover:bg-gray-50"><i class="fa-solid fa-circle-xmark text-red-400"></i> 高齡投保</li>
+                                <li class="flex items-center gap-2 p-2 border rounded hover:bg-gray-50"><i class="fa-solid fa-circle-xmark text-red-400"></i> 短期投保 (2年內身故)</li>
+                                <li class="flex items-center gap-2 p-2 border rounded hover:bg-gray-50"><i class="fa-solid fa-circle-xmark text-red-400"></i> 躉繳投保 (一次繳清)</li>
+                                <li class="flex items-center gap-2 p-2 border rounded hover:bg-gray-50"><i class="fa-solid fa-circle-xmark text-red-400"></i> 鉅額投保</li>
+                                <li class="flex items-center gap-2 p-2 border rounded hover:bg-gray-50"><i class="fa-solid fa-circle-xmark text-red-400"></i> 舉債投保</li>
+                            </ul>
+                        </div>
+
+                        <div id="tab-stock" class="analysis-content hidden">
+                            <div class="flex items-start gap-4 mb-4">
+                                <div class="p-3 bg-orange-50 text-orange-600 rounded-lg"><i class="fa-solid fa-building text-xl"></i></div>
+                                <div>
+                                    <h4 class="text-lg font-bold text-brand-dark">未上市櫃公司股票估價</h4>
+                                    <p class="text-sm text-gray-500">非以面額計算，需核算資產淨值</p>
+                                </div>
+                            </div>
+                            <div class="space-y-4 text-sm text-gray-600">
+                                <p>許多客戶誤以為未上市股票以面額(通常10元)申報，這是常見錯誤。正確估價方式為：</p>
+                                <div class="flex flex-col gap-4">
+                                    <div class="bg-white border border-gray-200 p-4 rounded shadow-sm">
+                                        <strong class="text-brand-main">1. 計算公司資產淨值</strong>
+                                        <p class="mt-1">依據繼承開始日該公司之資產負債表計算。</p>
+                                    </div>
+                                    <div class="bg-white border border-gray-200 p-4 rounded shadow-sm">
+                                        <strong class="text-brand-main">2. 土地價值重估 (關鍵!)</strong>
+                                        <p class="mt-1">公司名下若有不動產，計算淨值時，土地需按「死亡日公告現值」調整，房屋按「評定標準價格」調整。這通常會大幅拉高每股淨值。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-brand-dark text-white py-10 mt-auto border-t-4 border-brand-gold no-print">
+        <div class="container mx-auto px-4 text-center">
+            <div class="flex justify-center items-center gap-3 mb-6">
+                <div class="w-8 h-8 bg-brand-gold rounded text-brand-dark flex items-center justify-center">
+                    <i class="fa-solid fa-landmark"></i>
+                </div>
+                <h2 class="text-2xl font-serif font-bold">宏國地政 | 易丞地政</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm text-gray-400 max-w-4xl mx-auto mb-8">
+                <div>
+                    <h4 class="text-white font-bold mb-2">專業服務</h4>
+                    <p>遺產繼承登記</p>
+                    <p>遺產稅節稅規劃</p>
+                    <p>不動產贈與移轉</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-2">聯絡資訊</h4>
+                    <p>諮詢專線：06-258-2589</p>
+                    <p>服務據點：台南市北區文賢路1080巷11號</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-2">法規聲明</h4>
+                    <p>本系統試算結果僅供參考</p>
+                    <p>實際稅額以國稅局核定為準</p>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 pt-6 text-xs text-gray-500">
+                <p>&copy; 2026 宏國地政 | 易丞地政 All Rights Reserved. Designed for Professional Use.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- Navigation ---
+        function switchView(viewId) {
+            // Hide all
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('fade-enter-active');
+            });
+            
+            // Show target
+            const target = document.getElementById(`view-${viewId}`);
+            target.classList.remove('hidden');
+            setTimeout(() => target.classList.add('fade-enter-active'), 10); // Trigger anim
+
+            // Update Nav Buttons
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('bg-brand-gold', 'text-brand-dark', 'shadow');
+                btn.classList.add('text-gray-300', 'hover:bg-white/10');
+            });
+            const activeBtn = document.getElementById(`nav-${viewId}`);
+            activeBtn.classList.remove('text-gray-300', 'hover:bg-white/10');
+            activeBtn.classList.add('bg-brand-gold', 'text-brand-dark', 'shadow');
+        }
+
+        // --- Process Timeline Logic ---
+        const processData = [
+            {
+                step: "01", title: "除戶與啟動", icon: "fa-user-xmark",
+                desc: "繼承開始，首要辦理死亡登記與除戶。",
+                details: "繼承人需於死亡後30日內，攜帶死亡證明書至戶政事務所辦理除戶。此時建議同時申請全體繼承人戶籍謄本及印鑑證明。"
+            },
+            {
+                step: "02", title: "財產清查", icon: "fa-magnifying-glass-dollar",
+                desc: "利用金融單一窗口與自行盤點，確認遺產範圍。",
+                details: "向國稅局申請金融遺產查詢（含保險、存款、股票、貸款）。特別注意：虛擬貨幣需自行截圖佐證，未上市股票需找實體股票或股務代理。"
+            },
+            {
+                step: "03", title: "稅務申報", icon: "fa-file-invoice",
+                desc: "死亡日起 6 個月內向國稅局申報。",
+                details: "填寫遺產稅申報書，計算扣除額（配偶553萬、子女56萬等）。若來不及可申請延期3個月。漏報將處2倍以下罰鍰。"
+            },
+            {
+                step: "04", title: "完稅查欠", icon: "fa-stamp",
+                desc: "取得完稅證明，並查核無欠繳地方稅。",
+                details: "繳納遺產稅（或實物抵繳）後取得繳清證明書。接著需至稅捐處查核不動產是否有欠繳地價稅、房屋稅。"
+            },
+            {
+                step: "05", title: "產權移轉", icon: "fa-house-circle-check",
+                desc: "至地政事務所與銀行辦理過戶。",
+                details: "持相關證明文件至地政事務所辦理繼承登記（不動產），及至銀行、證券商辦理存款與股票繼承。"
+            }
+        ];
+
+        function initTimeline() {
+            const navContainer = document.getElementById('timeline-nav');
+            
+            processData.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `relative pl-8 cursor-pointer group transition-all duration-300`;
+                div.onclick = () => showProcessDetail(index);
+                div.innerHTML = `
+                    <div class="absolute left-0 top-1 w-9 h-9 bg-white border-2 border-brand-main rounded-full flex items-center justify-center z-10 group-hover:bg-brand-gold group-hover:border-brand-gold transition-colors ${index===0?'bg-brand-gold border-brand-gold text-brand-dark':''}" id="dot-${index}">
+                        <span class="text-xs font-bold">${item.step}</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 group-hover:shadow-md transition-all ${index===0?'border-brand-gold ring-1 ring-brand-gold':''}" id="card-${index}">
+                        <h4 class="font-bold text-brand-dark">${item.title}</h4>
+                        <p class="text-xs text-gray-500 mt-1 truncate">${item.desc}</p>
+                    </div>
+                `;
+                navContainer.appendChild(div);
+            });
+            showProcessDetail(0);
+        }
+
+        function showProcessDetail(index) {
+            const item = processData[index];
+            const contentDiv = document.getElementById('process-content');
+            
+            // Update Visuals
+            processData.forEach((_, i) => {
+                const dot = document.getElementById(`dot-${i}`);
+                const card = document.getElementById(`card-${i}`);
+                if(i === index) {
+                    dot.classList.add('bg-brand-gold', 'border-brand-gold', 'text-brand-dark');
+                    dot.classList.remove('bg-white', 'border-brand-main');
+                    card.classList.add('border-brand-gold', 'ring-1', 'ring-brand-gold');
+                } else {
+                    dot.classList.remove('bg-brand-gold', 'border-brand-gold', 'text-brand-dark');
+                    dot.classList.add('bg-white', 'border-brand-main');
+                    card.classList.remove('border-brand-gold', 'ring-1', 'ring-brand-gold');
+                }
+            });
+
+            // Render Content
+            contentDiv.innerHTML = `
+                <div class="flex flex-col items-center text-center fade-enter-active">
+                    <div class="w-20 h-20 bg-brand-light rounded-full flex items-center justify-center text-brand-main mb-6 text-3xl">
+                        <i class="fa-solid ${item.icon}"></i>
+                    </div>
+                    <h3 class="text-2xl font-serif font-bold text-brand-dark mb-4">${item.step} - ${item.title}</h3>
+                    <p class="text-lg text-gray-600 leading-relaxed max-w-2xl">${item.details}</p>
+                    <div class="mt-8 p-4 bg-yellow-50 text-yellow-800 text-sm rounded border border-yellow-200">
+                        <i class="fa-solid fa-lightbulb mr-2"></i> 宏國/易丞 專業提醒：每個案件狀況不同，建議儘早準備文件以免延誤時效。
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Analysis Tabs ---
+        function switchAnalysis(tabId) {
+            document.querySelectorAll('.analysis-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.analysis-tab').forEach(btn => {
+                btn.classList.remove('active', 'border-brand-main', 'text-brand-main', 'bg-white');
+                btn.classList.add('text-gray-400', 'border-transparent');
+            });
+            const activeBtn = document.querySelector(`button[onclick="switchAnalysis('${tabId}')"]`);
+            activeBtn.classList.add('active', 'border-brand-main', 'text-brand-main', 'bg-white');
+            activeBtn.classList.remove('text-gray-400', 'border-transparent');
+        }
+
+        // --- Calculator ---
+        function calculateTax() {
+            const estate = parseFloat(document.getElementById('calc-estate').value) || 0;
+            const spouse = parseInt(document.getElementById('calc-spouse').value);
+            const parents = parseInt(document.getElementById('calc-parents').value);
+            const children = parseInt(document.getElementById('calc-children-range').value);
+
+            // 2026 Rules
+            let deduction = 13330000 + 1380000; // Exempt + Funeral
+            if(spouse) deduction += 5530000;
+            deduction += (parents * 1380000);
+            deduction += (children * 560000);
+
+            let net = Math.max(0, estate - deduction);
+            let tax = 0;
+
+            if(net <= 50000000) tax = net * 0.1;
+            else if(net <= 100000000) tax = (net * 0.15) - 2500000;
+            else tax = (net * 0.2) - 7500000;
+
+            const resDiv = document.getElementById('calc-result');
+            resDiv.classList.remove('hidden');
+            document.getElementById('calc-amount').innerText = new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(tax);
+        }
+
+        // --- Checklist Progress ---
+        document.querySelectorAll('.checklist-item').forEach(item => {
+            item.addEventListener('change', updateProgress);
+        });
+
+        function updateProgress() {
+            const total = document.querySelectorAll('.checklist-item').length;
+            const checked = document.querySelectorAll('.checklist-item:checked').length;
+            const pct = Math.round((checked / total) * 100);
+            
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('progress-text').innerText = `${pct}%`;
+        }
+
+        // Range Slider Sync
+        document.getElementById('calc-children-range').addEventListener('input', (e) => {
+            document.getElementById('calc-children-val').innerText = e.target.value;
+        });
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            initTimeline();
+        });
+
+    </script>
+</body>
+</html>
