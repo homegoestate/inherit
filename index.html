@@ -10,17 +10,60 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
     
     <script>
+        // 1. 禁止右鍵選單
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // 2. 禁止常用開發者快捷鍵
+        document.onkeydown = function(e) {
+            // F12
+            if (e.keyCode == 123) {
+                return false;
+            }
+            // Ctrl+Shift+I (DevTools)
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
+                return false;
+            }
+            // Ctrl+Shift+C (Inspect Element)
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
+                return false;
+            }
+            // Ctrl+Shift+J (Console)
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
+                return false;
+            }
+            // Ctrl+U (View Source)
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
+                return false;
+            }
+            // Ctrl+S (Save Page)
+            if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) {
+                return false;
+            }
+        };
+
+        // 3. 嘗試檢測開發者工具開啟狀態 (進階防護)
+        setInterval(function() {
+            const before = new Date().getTime();
+            debugger; // 這行代碼會讓打開 DevTools 的人卡住
+            const after = new Date().getTime();
+            if (after - before > 100) {
+                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#1B2A41;color:white;font-family:sans-serif;"><h1>⚠️ Access Denied / 存取被拒絕</h1></div>';
+            }
+        }, 1000);
+    </script>
+
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            dark: '#1B2A41', // Deep Navy (Professional)
-                            main: '#324A5F', // Slate Blue
-                            gold: '#C7A064', // Muted Gold (Premium accent)
-                            light: '#F0F4F8', // Very light blue-gray background
+                            dark: '#1B2A41',
+                            main: '#324A5F',
+                            gold: '#C7A064',
+                            light: '#F0F4F8',
                         },
-                        accent: '#D76F50', // Warm Terracotta for highlights
+                        accent: '#D76F50',
                     },
                     fontFamily: {
                         sans: ['Noto Sans TC', 'sans-serif'],
@@ -35,22 +78,27 @@
         body {
             background-color: #F5F7FA;
             color: #2D3748;
+            /* 禁止文字選取 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* 允許輸入框內的文字被選取 (否則無法輸入) */
+        input, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
         }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #A0AEC0; }
-
-        /* Transitions */
         .fade-enter { opacity: 0; transform: translateY(10px); }
         .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
-
-        /* Card Styles */
         .glass-card {
             background: white;
             border: 1px solid rgba(226, 232, 240, 0.8);
@@ -58,38 +106,14 @@
             border-radius: 1rem;
         }
 
-        /* Print Styles - Letterhead Design */
         @media print {
-            body { background: white; -webkit-print-color-adjust: exact; }
+            body { background: white; -webkit-print-color-adjust: exact; user-select: auto; } /* 列印時允許選取 */
             .no-print { display: none !important; }
             .print-only { display: block !important; }
-            
-            #checklist-container {
-                box-shadow: none;
-                border: none;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            
-            .print-header {
-                border-bottom: 2px solid #C7A064;
-                margin-bottom: 20px;
-                padding-bottom: 10px;
-            }
-            
-            /* Ensure checkboxes render */
-            input[type="checkbox"] {
-                appearance: none;
-                width: 15px;
-                height: 15px;
-                border: 1px solid #000;
-                background: white;
-                display: inline-block;
-            }
-            input[type="checkbox"]:checked {
-                background: #000;
-            }
+            #checklist-container { box-shadow: none; border: none; width: 100%; margin: 0; padding: 0; }
+            .print-header { border-bottom: 2px solid #C7A064; margin-bottom: 20px; padding-bottom: 10px; }
+            input[type="checkbox"] { appearance: none; width: 15px; height: 15px; border: 1px solid #000; background: white; display: inline-block; }
+            input[type="checkbox"]:checked { background: #000; }
         }
     </style>
 </head>
@@ -134,20 +158,20 @@
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">案件進度節點</h3>
                     <div class="space-y-0 relative">
                         <div class="absolute left-4 top-4 bottom-4 w-0.5 bg-gray-200 z-0"></div>
-                        
                         <div id="timeline-nav" class="relative z-10 space-y-6"></div>
                     </div>
                 </div>
 
                 <div class="lg:col-span-8">
                     <div id="process-content" class="glass-card p-8 min-h-[500px] flex flex-col justify-center transition-all duration-300">
-                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="view-checklist" class="view-section hidden">
-            <div id="checklist-container" class="max-w-4xl mx-auto bg-white shadow-xl rounded-none md:rounded-xl overflow-hidden min-h-[29.7cm]"> <div class="p-8 md:p-12 border-b-2 border-brand-gold relative">
+            <div id="checklist-container" class="max-w-4xl mx-auto bg-white shadow-xl rounded-none md:rounded-xl overflow-hidden min-h-[29.7cm]"> 
+                <div class="p-8 md:p-12 border-b-2 border-brand-gold relative">
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="flex items-center gap-3 mb-2 print-only">
@@ -176,7 +200,6 @@
                 </div>
 
                 <div class="p-8 md:p-12 space-y-10">
-                    
                     <section>
                         <h3 class="flex items-center text-lg font-bold text-brand-dark mb-4 border-b border-gray-100 pb-2">
                             <span class="w-8 h-8 rounded bg-brand-light text-brand-main flex items-center justify-center mr-3 text-sm"><i class="fa-solid fa-id-card"></i></span>
@@ -363,7 +386,6 @@
                 </div>
 
                 <div class="xl:col-span-2 space-y-6">
-                    
                     <div class="flex space-x-1 border-b border-gray-200">
                         <button onclick="switchAnalysis('crypto')" class="analysis-tab active px-6 py-3 text-sm font-bold text-brand-main border-b-2 border-brand-main bg-white rounded-t-lg">
                             <i class="fa-brands fa-bitcoin mr-2"></i>虛擬資產
@@ -487,20 +509,14 @@
     </footer>
 
     <script>
-        // --- Navigation ---
         function switchView(viewId) {
-            // Hide all
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.add('hidden');
                 el.classList.remove('fade-enter-active');
             });
-            
-            // Show target
             const target = document.getElementById(`view-${viewId}`);
             target.classList.remove('hidden');
-            setTimeout(() => target.classList.add('fade-enter-active'), 10); // Trigger anim
-
-            // Update Nav Buttons
+            setTimeout(() => target.classList.add('fade-enter-active'), 10);
             document.querySelectorAll('.nav-item').forEach(btn => {
                 btn.classList.remove('bg-brand-gold', 'text-brand-dark', 'shadow');
                 btn.classList.add('text-gray-300', 'hover:bg-white/10');
@@ -510,38 +526,16 @@
             activeBtn.classList.add('bg-brand-gold', 'text-brand-dark', 'shadow');
         }
 
-        // --- Process Timeline Logic ---
         const processData = [
-            {
-                step: "01", title: "除戶與啟動", icon: "fa-user-xmark",
-                desc: "繼承開始，首要辦理死亡登記與除戶。",
-                details: "繼承人需於死亡後30日內，攜帶死亡證明書至戶政事務所辦理除戶。此時建議同時申請全體繼承人戶籍謄本及印鑑證明。"
-            },
-            {
-                step: "02", title: "財產清查", icon: "fa-magnifying-glass-dollar",
-                desc: "利用金融單一窗口與自行盤點，確認遺產範圍。",
-                details: "向國稅局申請金融遺產查詢（含保險、存款、股票、貸款）。特別注意：虛擬貨幣需自行截圖佐證，未上市股票需找實體股票或股務代理。"
-            },
-            {
-                step: "03", title: "稅務申報", icon: "fa-file-invoice",
-                desc: "死亡日起 6 個月內向國稅局申報。",
-                details: "填寫遺產稅申報書，計算扣除額（配偶553萬、子女56萬等）。若來不及可申請延期3個月。漏報將處2倍以下罰鍰。"
-            },
-            {
-                step: "04", title: "完稅查欠", icon: "fa-stamp",
-                desc: "取得完稅證明，並查核無欠繳地方稅。",
-                details: "繳納遺產稅（或實物抵繳）後取得繳清證明書。接著需至稅捐處查核不動產是否有欠繳地價稅、房屋稅。"
-            },
-            {
-                step: "05", title: "產權移轉", icon: "fa-house-circle-check",
-                desc: "至地政事務所與銀行辦理過戶。",
-                details: "持相關證明文件至地政事務所辦理繼承登記（不動產），及至銀行、證券商辦理存款與股票繼承。"
-            }
+            { step: "01", title: "除戶與啟動", icon: "fa-user-xmark", desc: "繼承開始，首要辦理死亡登記與除戶。", details: "繼承人需於死亡後30日內，攜帶死亡證明書至戶政事務所辦理除戶。此時建議同時申請全體繼承人戶籍謄本及印鑑證明。" },
+            { step: "02", title: "財產清查", icon: "fa-magnifying-glass-dollar", desc: "利用金融單一窗口與自行盤點，確認遺產範圍。", details: "向國稅局申請金融遺產查詢（含保險、存款、股票、貸款）。特別注意：虛擬貨幣需自行截圖佐證，未上市股票需找實體股票或股務代理。" },
+            { step: "03", title: "稅務申報", icon: "fa-file-invoice", desc: "死亡日起 6 個月內向國稅局申報。", details: "填寫遺產稅申報書，計算扣除額（配偶553萬、子女56萬等）。若來不及可申請延期3個月。漏報將處2倍以下罰鍰。" },
+            { step: "04", title: "完稅查欠", icon: "fa-stamp", desc: "取得完稅證明，並查核無欠繳地方稅。", details: "繳納遺產稅（或實物抵繳）後取得繳清證明書。接著需至稅捐處查核不動產是否有欠繳地價稅、房屋稅。" },
+            { step: "05", title: "產權移轉", icon: "fa-house-circle-check", desc: "至地政事務所與銀行辦理過戶。", details: "持相關證明文件至地政事務所辦理繼承登記（不動產），及至銀行、證券商辦理存款與股票繼承。" }
         ];
 
         function initTimeline() {
             const navContainer = document.getElementById('timeline-nav');
-            
             processData.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = `relative pl-8 cursor-pointer group transition-all duration-300`;
@@ -563,8 +557,6 @@
         function showProcessDetail(index) {
             const item = processData[index];
             const contentDiv = document.getElementById('process-content');
-            
-            // Update Visuals
             processData.forEach((_, i) => {
                 const dot = document.getElementById(`dot-${i}`);
                 const card = document.getElementById(`card-${i}`);
@@ -578,8 +570,6 @@
                     card.classList.remove('border-brand-gold', 'ring-1', 'ring-brand-gold');
                 }
             });
-
-            // Render Content
             contentDiv.innerHTML = `
                 <div class="flex flex-col items-center text-center fade-enter-active">
                     <div class="w-20 h-20 bg-brand-light rounded-full flex items-center justify-center text-brand-main mb-6 text-3xl">
@@ -594,11 +584,9 @@
             `;
         }
 
-        // --- Analysis Tabs ---
         function switchAnalysis(tabId) {
             document.querySelectorAll('.analysis-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            
             document.querySelectorAll('.analysis-tab').forEach(btn => {
                 btn.classList.remove('active', 'border-brand-main', 'text-brand-main', 'bg-white');
                 btn.classList.add('text-gray-400', 'border-transparent');
@@ -608,55 +596,39 @@
             activeBtn.classList.remove('text-gray-400', 'border-transparent');
         }
 
-        // --- Calculator ---
         function calculateTax() {
             const estate = parseFloat(document.getElementById('calc-estate').value) || 0;
             const spouse = parseInt(document.getElementById('calc-spouse').value);
             const parents = parseInt(document.getElementById('calc-parents').value);
             const children = parseInt(document.getElementById('calc-children-range').value);
-
-            // 2026 Rules
-            let deduction = 13330000 + 1380000; // Exempt + Funeral
+            let deduction = 13330000 + 1380000;
             if(spouse) deduction += 5530000;
             deduction += (parents * 1380000);
             deduction += (children * 560000);
-
             let net = Math.max(0, estate - deduction);
             let tax = 0;
-
             if(net <= 50000000) tax = net * 0.1;
             else if(net <= 100000000) tax = (net * 0.15) - 2500000;
             else tax = (net * 0.2) - 7500000;
-
             const resDiv = document.getElementById('calc-result');
             resDiv.classList.remove('hidden');
             document.getElementById('calc-amount').innerText = new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(tax);
         }
 
-        // --- Checklist Progress ---
-        document.querySelectorAll('.checklist-item').forEach(item => {
-            item.addEventListener('change', updateProgress);
-        });
-
+        document.querySelectorAll('.checklist-item').forEach(item => { item.addEventListener('change', updateProgress); });
         function updateProgress() {
             const total = document.querySelectorAll('.checklist-item').length;
             const checked = document.querySelectorAll('.checklist-item:checked').length;
             const pct = Math.round((checked / total) * 100);
-            
             document.getElementById('progress-bar').style.width = `${pct}%`;
             document.getElementById('progress-text').innerText = `${pct}%`;
         }
 
-        // Range Slider Sync
         document.getElementById('calc-children-range').addEventListener('input', (e) => {
             document.getElementById('calc-children-val').innerText = e.target.value;
         });
 
-        // Init
-        window.addEventListener('DOMContentLoaded', () => {
-            initTimeline();
-        });
-
+        window.addEventListener('DOMContentLoaded', () => { initTimeline(); });
     </script>
 </body>
 </html>
