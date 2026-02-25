@@ -15,36 +15,18 @@
 
         // 2. 禁止常用開發者快捷鍵
         document.onkeydown = function(e) {
-            // F12
-            if (e.keyCode == 123) {
-                return false;
-            }
-            // Ctrl+Shift+I (DevTools)
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) {
-                return false;
-            }
-            // Ctrl+Shift+C (Inspect Element)
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) {
-                return false;
-            }
-            // Ctrl+Shift+J (Console)
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) {
-                return false;
-            }
-            // Ctrl+U (View Source)
-            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) {
-                return false;
-            }
-            // Ctrl+S (Save Page)
-            if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) {
-                return false;
-            }
+            if (e.keyCode == 123) return false; // F12
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; // Ctrl+Shift+C
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
+            if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false; // Ctrl+S
         };
 
         // 3. 嘗試檢測開發者工具開啟狀態 (進階防護)
         setInterval(function() {
             const before = new Date().getTime();
-            debugger; // 這行代碼會讓打開 DevTools 的人卡住
+            debugger; 
             const after = new Date().getTime();
             if (after - before > 100) {
                 document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#1B2A41;color:white;font-family:sans-serif;"><h1>⚠️ Access Denied / 存取被拒絕</h1></div>';
@@ -78,14 +60,12 @@
         body {
             background-color: #F5F7FA;
             color: #2D3748;
-            /* 禁止文字選取 */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
         }
 
-        /* 允許輸入框內的文字被選取 (否則無法輸入) */
         input, textarea {
             -webkit-user-select: text;
             -moz-user-select: text;
@@ -107,7 +87,7 @@
         }
 
         @media print {
-            body { background: white; -webkit-print-color-adjust: exact; user-select: auto; } /* 列印時允許選取 */
+            body { background: white; -webkit-print-color-adjust: exact; user-select: auto; }
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             #checklist-container { box-shadow: none; border: none; width: 100%; margin: 0; padding: 0; }
@@ -140,6 +120,9 @@
                 </button>
                 <button onclick="switchView('analysis')" id="nav-analysis" class="nav-item px-5 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 text-gray-300 hover:text-white">
                     <i class="fa-solid fa-calculator mr-2"></i>稅務試算
+                </button>
+                <button onclick="switchView('sop')" id="nav-sop" class="nav-item px-5 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 text-gray-300 hover:text-white border border-brand-gold/30">
+                    <i class="fa-solid fa-book-open mr-2"></i>內部 SOP
                 </button>
             </div>
         </div>
@@ -312,7 +295,6 @@
                             <li>本清單由 宏國地政 | 易丞地政 提供，僅供客戶辦理參考。</li>
                         </ul>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -378,7 +360,7 @@
                                 <p class="text-center text-3xl font-serif font-bold text-white tracking-tight" id="calc-amount">$0</p>
                                 <div class="mt-4 text-xs text-gray-400 bg-black/20 p-3 rounded">
                                     <div class="flex justify-between mb-1"><span>免稅額度</span><span>1,333 萬</span></div>
-                                    <div class="flex justify-between"><span>喪葬扣除</span><span>1,333 萬</span></div>
+                                    <div class="flex justify-between"><span>喪葬扣除</span><span>1,23 萬</span></div>
                                 </div>
                             </div>
                         </div>
@@ -399,7 +381,6 @@
                     </div>
 
                     <div class="glass-card p-6 min-h-[400px]">
-                        
                         <div id="tab-crypto" class="analysis-content block">
                             <div class="flex items-start gap-4 mb-4">
                                 <div class="p-3 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-wallet text-xl"></i></div>
@@ -472,6 +453,104 @@
             </div>
         </div>
 
+        <div id="view-sop" class="view-section hidden">
+            <header class="mb-8 text-center">
+                <h2 class="text-3xl font-serif text-brand-dark font-bold mb-2">內部作業規範與要點 (內部限定)</h2>
+                <p class="text-gray-500">公司同仁請依此標準作業程序 (SOP) 辦理案件</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-card p-6 border-t-4 border-brand-main">
+                    <h3 class="text-xl font-bold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-file-contract text-brand-main"></i> 一、分割繼承程序
+                    </h3>
+                    <div class="bg-orange-50 text-orange-800 text-xs px-3 py-2 rounded mb-4 font-bold border border-orange-200">
+                        ⚠️ 核心前提：需先立委任書～就協議部分進行約定。
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <h4 class="font-bold text-sm text-brand-dark mb-2">1. 國稅局申報遺產稅</h4>
+                            <ul class="list-decimal pl-5 text-sm text-gray-600 space-y-1">
+                                <li>申請遺產清冊及查詢金融遺產等。</li>
+                                <li>調閱被繼承人之土地建物謄本及繼承人之戶籍謄本等。</li>
+                                <li>製作繼承系統表。</li>
+                                <li>申報遺產稅 (檢附：系統表、被繼與繼承之戶籍謄本、土地建物謄本等)。</li>
+                            </ul>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <h4 class="font-bold text-sm text-brand-dark mb-2">2. 地政事務所辦理繼承登記 (土登34+119+120)</h4>
+                            <ul class="list-decimal pl-5 text-sm text-gray-600 space-y-1">
+                                <li>備妥繼承登記文件 (申請書、清冊、系統表、協議書、遺產稅繳免納證明書)。</li>
+                                <li>製作土地清冊 (需明確註明取得人為哪一位繼承人)。</li>
+                                <li>準備遺產分割協議書 2 份 <strong class="text-red-500">(需申報印花稅！)</strong>。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 border-t-4 border-brand-gold">
+                    <h3 class="text-xl font-bold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-ring text-brand-gold"></i> 二、配偶剩餘財產分配
+                    </h3>
+                    <div class="bg-blue-50 text-blue-800 text-xs px-3 py-2 rounded mb-4 font-bold border border-blue-200">
+                        💡 辦理順序：先辦理配偶剩餘財產分配，後辦理繼承登記。
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <h4 class="font-bold text-sm text-brand-dark mb-2">1. 國稅局申報遺產稅</h4>
+                            <ul class="list-decimal pl-5 text-sm text-gray-600 space-y-1">
+                                <li>申請夫妻兩人資料 (確認財產制：無法定約定則為法定。法定需確認婚前/婚後財產與負債)。</li>
+                                <li>確認是否有可扣除之特殊類型土地 (如農地等)。</li>
+                                <li>調閱謄本並製作繼承系統表。</li>
+                                <li>申報剩餘財產分配及遺產稅 (檢附系統表、戶籍謄本、土地建物謄本等)。</li>
+                            </ul>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <h4 class="font-bold text-sm text-brand-dark mb-2">2. 分配與登記實務要點</h4>
+                            <ul class="list-decimal pl-5 text-sm text-gray-600 space-y-1">
+                                <li>辦理分配 (義務人：全體繼承人；權利人：配偶)。需另立切結書，且 <strong class="text-red-500">記得申報土地增值稅！</strong></li>
+                                <li><strong class="text-brand-dark bg-yellow-100 px-1">嚴格禁止：</strong>配偶剩餘分配之部分，於繼承登記之「遺產分割協議書」中絕對不能列出。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-gray-800 text-white text-xs px-3 py-1 rounded-bl-lg">特殊產權</div>
+                        <h4 class="font-bold text-brand-dark mb-3"><i class="fa-solid fa-house-chimney-crack text-gray-500 mr-2"></i> 如有「未保存登記建物」時：</h4>
+                        <p class="text-xs text-gray-500 mb-3">無論是分割繼承或配偶剩餘財產分配，若遇未保存建物，請備齊以下5項文件：</p>
+                        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700">
+                            <li class="flex items-center gap-2"><i class="fa-regular fa-square-check text-brand-gold"></i> 1. 房屋納稅名義變更申請書</li>
+                            <li class="flex items-center gap-2"><i class="fa-regular fa-square-check text-brand-gold"></i> 2. 國稅局遺產免稅證明書</li>
+                            <li class="flex items-center gap-2"><i class="fa-regular fa-square-check text-brand-gold"></i> 3. 繼承系統表</li>
+                            <li class="flex items-center gap-2"><i class="fa-regular fa-square-check text-brand-gold"></i> 4. 遺產分割協議書</li>
+                            <li class="flex items-center gap-2"><i class="fa-regular fa-square-check text-brand-gold"></i> 5. 身分證影本</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-brand-gold/50 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-brand-gold text-brand-dark text-xs font-bold px-3 py-1 rounded-bl-lg">稅務焦點</div>
+                        <h4 class="font-bold text-brand-dark mb-3"><i class="fa-solid fa-stamp text-brand-gold mr-2"></i> 印花稅全攻略 (臺南市財稅局)</h4>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex items-start gap-2">
+                                <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-bold shrink-0">要課稅</span>
+                                <p class="text-gray-700">保存登記房屋 + 協議 = <strong>要課稅</strong>。訂立遺產分割協議書並向地政機關辦理物權登記，需根據協議書成立時價值，繳納千分之一印花稅。</p>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold shrink-0">免課稅</span>
+                                <p class="text-gray-700">所有繼承人依應有部分繼承不動產、其他動產(如車輛/存款)、未辦保存登記之房屋、或依照遺囑辦理繼承登記者，皆<strong>不需繳納印花稅</strong>。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <footer class="bg-brand-dark text-white py-10 mt-auto border-t-4 border-brand-gold no-print">
@@ -517,13 +596,19 @@
             const target = document.getElementById(`view-${viewId}`);
             target.classList.remove('hidden');
             setTimeout(() => target.classList.add('fade-enter-active'), 10);
+            
+            // Reset all nav buttons
             document.querySelectorAll('.nav-item').forEach(btn => {
-                btn.classList.remove('bg-brand-gold', 'text-brand-dark', 'shadow');
+                btn.classList.remove('bg-brand-gold', 'text-brand-dark', 'shadow', 'border-brand-gold/30');
                 btn.classList.add('text-gray-300', 'hover:bg-white/10');
             });
+            
+            // Active nav button
             const activeBtn = document.getElementById(`nav-${viewId}`);
-            activeBtn.classList.remove('text-gray-300', 'hover:bg-white/10');
-            activeBtn.classList.add('bg-brand-gold', 'text-brand-dark', 'shadow');
+            if(activeBtn) {
+                activeBtn.classList.remove('text-gray-300', 'hover:bg-white/10');
+                activeBtn.classList.add('bg-brand-gold', 'text-brand-dark', 'shadow');
+            }
         }
 
         const processData = [
